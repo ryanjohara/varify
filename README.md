@@ -5,6 +5,8 @@
 ## Need some help?
 Join our chat room and speak with our dev team: http://www.hipchat.com/gZcKr0p3y
 
+__NOTE:__ Varify, as it currently stands, is in beta form and is currently undergoing a transition to the latest version of Harvest([Cilantro](https://github.com/cbmi/cilantro/), [Avocado](https://github.com/cbmi/avocado/), and [Serrano](https://github.com/cbmi/serrano/)). Continue to use the master branch if you wish to work with Varify in the mean time. The Harvest transition is happening in the `harvest` branch if you want to follow along there but there.
+
 ## Dependencies
 
 Listed are the download links to each dependency, however most OSes have a
@@ -276,8 +278,8 @@ Note, these workers will run forever, if there is only a single sample being loa
 After the batch of samples have been loaded, a two more commands need to be executed to update the annotations and cohort frequencies. These are performed _post-load_ for performance reasons.
 
 ```bash
-./bin/manage.py variants load --evs --1000g --sift --polyphen2 2>&1 variants.load.txt &
-./bin/manage.py samples allele-freqs 2>&1 samples.allele-freqs.txt &
+./bin/manage.py variants load --evs --1000g --sift --polyphen2 > variants.load.txt 2>&1 &
+./bin/manage.py samples allele-freqs > samples.allele-freqs.txt 2>&1 &
 ```
 
 ### Performance
