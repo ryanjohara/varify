@@ -32,12 +32,20 @@ install:
   - pip install -q coveralls Django==$DJANGO --use-mirrors
   - pip install -r requirements.txt --use-mirrors
   - pip install discover==0.4.0
-  - pip install selenium==2.28.0 
+  - pip install selenium==2.28.0
+  - npm install -g coffee-script
+  - gem install sass
+  - psql -c "create user varify with password 'varify';" -U postgres
+  - psql -c "create database varifydb with owner varify template template1 encoding 'utf8';" -U postgres
+  
+  - ./bin/manage.py syncdb
+  - ./bin/manage.py migrate
+ 
 services:
   - redis-server
   - memcached
 before_script:
-  - psql -c 'create database varifydb;' -U postgres
+  - DJANGO_SETTINGS_MODULE='tests.settings' PYTHONPATH=. `which django-admin.py` test varify sample_load_process 
   - "python headless_tests/test/start_ghostdriver.py"
   - "sleep 8"
   - "cp headless_tests/settings.py varify/conf/local_settings.py"
