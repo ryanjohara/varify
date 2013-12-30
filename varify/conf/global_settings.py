@@ -52,7 +52,6 @@ INSTALLED_APPS = (
     'django_rq',
     'django_rq_dashboard',
 
-    'cilantro',
     'serrano',
     'avocado',
     'avocado.export',
@@ -172,9 +171,7 @@ TEMPLATE_DIRS = ()
 # template context.
 TEMPLATE_CONTEXT_PROCESSORS += (
     'django.core.context_processors.request',
-    'cilantro.context_processors.cilantro',
     'varify.context_processors.static',
-    'varify.context_processors.sentry',
     'varify.context_processors.alamut',
 )
 
@@ -217,15 +214,14 @@ SITEAUTH_ALLOW_URLS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'tracking.middleware.VisitorTrackingMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'siteauth.middleware.SiteAuthenticationMiddleware',
-    'serrano.middleware.SessionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'reversion.middleware.RevisionMiddleware',
+    'serrano.middleware.SessionMiddleware',
+    'siteauth.middleware.SiteAuthenticationMiddleware',
 )
 
 
@@ -234,8 +230,8 @@ MIDDLEWARE_CLASSES = (
 #
 
 EMAIL_SUBJECT_PREFIX = '[Varify] '
-NO_REPLY_EMAIL = 'noreply@varify-example.com'
-SUPPORT_EMAIL = 'support@varify-example.com'
+NO_REPLY_EMAIL = 'noreply@example.com'
+SUPPORT_EMAIL = 'support@example.com'
 
 #
 # LOGGING
@@ -298,11 +294,7 @@ CACHE_MIDDLEWARE_KEY_PREFIX = ''
 # AUTHENTICATION
 #
 
-# Two additional auth backends for email-based (rather than username)
-# and LDAP-based authentication. To use the LDAP authentication, the
-# rematining LDAP settings (see below) must be defined.
 AUTHENTICATION_BACKENDS = (
-    'varify.backends.LdapBackend',
     'django.contrib.auth.backends.ModelBackend',
     'guardian.backends.ObjectPermissionBackend',
 )
@@ -350,10 +342,12 @@ TRACK_IGNORE_URLS = (
     r'^(static|media|admin|tracking)/',
 )
 
-
-HAYSTACK_SITECONF = 'varify.conf.search_sites'
-HAYSTACK_SEARCH_ENGINE = 'whoosh'
-HAYSTACK_WHOOSH_PATH = os.path.join(os.path.dirname(__file__), '../../whoosh.index')
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(os.path.dirname(__file__), '../../whoosh.index'),
+    }
+}
 
 # For django-guardian
 ANONYMOUS_USER_ID = -1
