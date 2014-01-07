@@ -547,32 +547,6 @@
     },
     {
         "fields": {
-            "app_name": "chop",
-            "archived": false,
-            "category": null,
-            "created": "2012-09-23T12:03:28.774",
-            "description": "",
-            "enumerable": false,
-            "field_name": "clinical_phenotype",
-            "group": null,
-            "internal": false,
-            "keywords": "",
-            "model_name": "genedetail",
-            "modified": "2012-09-23T13:58:48.100",
-            "name": "Clinical Phenotype",
-            "name_plural": "",
-            "order": null,
-            "published": false,
-            "sites": [],
-            "translator": null,
-            "unit": "",
-            "unit_plural": ""
-        },
-        "model": "avocado.datafield",
-        "pk": 81
-    },
-    {
-        "fields": {
             "app_name": "variants",
             "archived": false,
             "category": null,
@@ -1454,32 +1428,6 @@
         },
         "model": "avocado.datafield",
         "pk": 14
-    },
-    {
-        "fields": {
-            "app_name": "chop",
-            "archived": false,
-            "category": null,
-            "created": "2012-09-23T12:03:28.653",
-            "description": "",
-            "enumerable": true,
-            "field_name": "inheritance_pattern",
-            "group": null,
-            "internal": false,
-            "keywords": "",
-            "model_name": "genedetail",
-            "modified": "2012-09-23T13:58:34.359",
-            "name": "Inheritance Pattern",
-            "name_plural": "",
-            "order": null,
-            "published": true,
-            "sites": [],
-            "translator": null,
-            "unit": "",
-            "unit_plural": ""
-        },
-        "model": "avocado.datafield",
-        "pk": 80
     },
     {
         "fields": {
@@ -2445,32 +2393,6 @@
     },
     {
         "fields": {
-            "app_name": "chop",
-            "archived": false,
-            "category": null,
-            "created": "2012-09-23T12:03:28.507",
-            "description": "",
-            "enumerable": true,
-            "field_name": "syndrome_type",
-            "group": null,
-            "internal": false,
-            "keywords": "",
-            "model_name": "genedetail",
-            "modified": "2012-09-23T13:58:11.175",
-            "name": "Syndrome Type",
-            "name_plural": "",
-            "order": null,
-            "published": true,
-            "sites": [],
-            "translator": null,
-            "unit": "",
-            "unit_plural": ""
-        },
-        "model": "avocado.datafield",
-        "pk": 79
-    },
-    {
-        "fields": {
             "app_name": "genes",
             "archived": false,
             "category": null,
@@ -2494,32 +2416,6 @@
         },
         "model": "avocado.datafield",
         "pk": 85
-    },
-    {
-        "fields": {
-            "app_name": "chop",
-            "archived": false,
-            "category": null,
-            "created": "2012-09-23T12:03:28.283",
-            "description": "",
-            "enumerable": true,
-            "field_name": "tier",
-            "group": null,
-            "internal": false,
-            "keywords": "",
-            "model_name": "genedetail",
-            "modified": "2012-09-23T13:58:59.453",
-            "name": "Tier",
-            "name_plural": "",
-            "order": null,
-            "published": true,
-            "sites": [],
-            "translator": null,
-            "unit": "",
-            "unit_plural": ""
-        },
-        "model": "avocado.datafield",
-        "pk": 78
     },
     {
         "fields": {
@@ -2884,6 +2780,75 @@
         },
         "model": "avocado.datafield",
         "pk": 3
+    },
+    {
+        "fields": {
+            "archived": false,
+            "category": null,
+            "created": "2014-1-2T11:13:46.197",
+            "description": "Cohort to compare the proband's variants against",
+            "formatter_name": "Formatter",
+            "group": null,
+            "ident": null,
+            "internal": false,
+            "keywords": "",
+            "modified": "2014-1-2T11:13:46.197",
+            "name": "Cohort",
+            "name_plural": "",
+            "order": null,
+            "published": true,
+            "queryable": true,
+            "sites": [],
+            "sortable": true
+        },
+        "model": "avocado.dataconcept",
+        "pk": 27
+    },
+    {
+        "fields": {
+            "archived": false,
+            "category": null,
+            "created": "2014-1-2T11:13:46.197",
+            "description": "The minimum possible allele frequency is bound by the number of samples in the cohort. For example, the minimum possible frequency for 8 samples would be 0.125, while for 100 would be 0.01.",
+            "formatter_name": "Formatter",
+            "group": null,
+            "ident": null,
+            "internal": false,
+            "keywords": "",
+            "modified": "2014-1-2T11:13:46.197",
+            "name": "Cohort Allele Frequency",
+            "name_plural": "",
+            "order": null,
+            "published": true,
+            "queryable": true,
+            "sites": [],
+            "sortable": true
+        },
+        "model": "avocado.dataconcept",
+        "pk": 28
+    },
+    {
+        "fields": {
+            "archived": false,
+            "category": null,
+            "created": "2014-1-2T11:13:46.197",
+            "description": "Choose from a pre-defined set of genes or search below to select some arbitrary genes.",
+            "formatter_name": "Formatter",
+            "group": null,
+            "ident": null,
+            "internal": false,
+            "keywords": "",
+            "modified": "2014-1-2T11:13:46.197",
+            "name": "Gene Set",
+            "name_plural": "",
+            "order": null,
+            "published": true,
+            "queryable": true,
+            "sites": [],
+            "sortable": true
+        },
+        "model": "avocado.dataconcept",
+        "pk": 29
     },
     {
         "fields": {
@@ -3989,5 +3954,44 @@
         },
         "model": "avocado.dataconceptfield",
         "pk": 4
+    },
+    {
+        "fields": {
+            "concept": 27,
+            "created": "2014-01-06T11:43:08.786",
+            "field": 75,
+            "modified": "2014-01-06T11:43:08.786",
+            "name": null,
+            "name_plural": null,
+            "order": null
+        },
+        "model": "avocado.dataconceptfield",
+        "pk": 50
+    },
+    {
+        "fields": {
+            "concept": 28,
+            "created": "2014-01-06T11:43:08.786",
+            "field": 104,
+            "modified": "2014-01-06T11:43:08.786",
+            "name": null,
+            "name_plural": null,
+            "order": null
+        },
+        "model": "avocado.dataconceptfield",
+        "pk": 51
+    },
+    {
+        "fields": {
+            "concept": 29,
+            "created": "2014-01-06T11:43:08.786",
+            "field": 82,
+            "modified": "2014-01-06T11:43:08.786",
+            "name": null,
+            "name_plural": null,
+            "order": null
+        },
+        "model": "avocado.dataconceptfield",
+        "pk": 52
     }
 ]
