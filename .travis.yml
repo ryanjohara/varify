@@ -1,78 +1,68 @@
 language: python
-
 branches:
   only:
-    - headless_test
+  - headless_test
 python:
-  #- 2.6
-  - 2.7
+- 2.7
 env:
   global:
-    - "ARTIFACTS_S3_BUCKET=edu.chop.cbmi.tiu.travisci"
-
-    - secure: "eauLZfWhP3bliVwBebwrh99BuO1iqHoEkVwbD/kHsjKPQY5WwaBfsROKXgOhc0sQVMMX4pyQe33jSEgogFe5claLTLNlMnkf2NAMFlRlQ8/ICUfLyiif/N7vWk940Cztbh7wFQiWW69FdbAmI8/xBiTzjgNIdc+80qRfKMMGiK8="
-
-    - secure: "KX6OC+YNmd7QdlttAZi0h6ut++owxegM/cQdX5LsRUm1G9gIMbeusreinZi7twM/MWYry1bbGjEERtyBvKUrelrdSJ8jeaidrLjxWBWQhtYm9tEAhZkSywaXZ62cd5gdyhMJHTMCcwwmkpnYJTSCOzp3k+C9pct+5ZTbyQNFek4="
-    
-    - S3_POLICY="ewoJIlZlcnNpb24iOiAiMjAwOC0xMC0xNyIsCgkiSWQiOiAiUG9saWN5MTM4Njg4ODIxMTgyNCIsCgkiU3RhdGVtZW50IjogWwoJCXsKCQkJIlNpZCI6ICJTdG10MTM4Njg4ODE5MjE5MSIsCgkJCSJFZmZlY3QiOiAiQWxsb3ciLAoJCQkiUHJpbmNpcGFsIjogewoJCQkJIkFXUyI6ICIqIgoJCQl9LAoJCQkiQWN0aW9uIjogInMzOioiLAoJCQkiUmVzb3VyY2UiOiAiYXJuOmF3czpzMzo6OmVkdV9jaG9wX2NibWlfdGl1X3RyYXZpc2NpLyoiCgkJfQoJXQp9Cg=="
-
-    - S3_SIGNATURE="DzomQiBA4U8Q3o4INLpJv1Py07U="
-     
-    - DJANGO=1.4.5
-
-    - DJANGO=1.5.1
-
+  - ARTIFACTS_S3_BUCKET=edu.chop.cbmi.tiu.travisci
+  - secure: eauLZfWhP3bliVwBebwrh99BuO1iqHoEkVwbD/kHsjKPQY5WwaBfsROKXgOhc0sQVMMX4pyQe33jSEgogFe5claLTLNlMnkf2NAMFlRlQ8/ICUfLyiif/N7vWk940Cztbh7wFQiWW69FdbAmI8/xBiTzjgNIdc+80qRfKMMGiK8=
+  - secure: KX6OC+YNmd7QdlttAZi0h6ut++owxegM/cQdX5LsRUm1G9gIMbeusreinZi7twM/MWYry1bbGjEERtyBvKUrelrdSJ8jeaidrLjxWBWQhtYm9tEAhZkSywaXZ62cd5gdyhMJHTMCcwwmkpnYJTSCOzp3k+C9pct+5ZTbyQNFek4=
+  - S3_POLICY="ewoJIlZlcnNpb24iOiAiMjAwOC0xMC0xNyIsCgkiSWQiOiAiUG9saWN5MTM4Njg4ODIxMTgyNCIsCgkiU3RhdGVtZW50IjogWwoJCXsKCQkJIlNpZCI6ICJTdG10MTM4Njg4ODE5MjE5MSIsCgkJCSJFZmZlY3QiOiAiQWxsb3ciLAoJCQkiUHJpbmNpcGFsIjogewoJCQkJIkFXUyI6ICIqIgoJCQl9LAoJCQkiQWN0aW9uIjogInMzOioiLAoJCQkiUmVzb3VyY2UiOiAiYXJuOmF3czpzMzo6OmVkdV9jaG9wX2NibWlfdGl1X3RyYXZpc2NpLyoiCgkJfQoJXQp9Cg=="
+  - S3_SIGNATURE="DzomQiBA4U8Q3o4INLpJv1Py07U="
+  - DJANGO=1.4.5
+  - DJANGO=1.5.1
 virtualenv:
   system_site_packages: true
-
-before_install:
-  
-
+before_install: 
 install:
-  - pip install -q coveralls Django==$DJANGO --use-mirrors
-  - pip install -r requirements.txt --use-mirrors
-  - pip install discover==0.4.0
-  - pip install selenium==2.28.0
-  - npm install -g coffee-script
-  - gem install sass
-  - psql -c "create user varify with password 'varify';" -U postgres
-  - psql -c "create database varifydb with owner varify template template1 encoding 'utf8';" -U postgres
-  - "cp headless_tests/settings.py varify/conf/local_settings.py"  
-  - "cp headless_tests/initial_data.json ."
-  - ./bin/manage.py syncdb --noinput
-  - ./bin/manage.py migrate
- 
+- pip install -q coveralls Django==$DJANGO --use-mirrors
+- pip install -r requirements.txt --use-mirrors
+- pip install discover==0.4.0
+- pip install selenium==2.28.0
+- npm install -g coffee-script
+- gem install sass
+- psql -c "create user varify with password 'varify';" -U postgres
+- psql -c "create database varifydb with owner varify template template1 encoding
+  'utf8';" -U postgres
+- cp headless_tests/settings.py varify/conf/local_settings.py
+- cp headless_tests/initial_data.json .
+- ./bin/manage.py syncdb --noinput
+- ./bin/manage.py migrate
 services:
-  - redis-server
-  - memcached
+- redis-server
+- memcached
 before_script:
-  #- DJANGO_SETTINGS_MODULE='tests.settings' PYTHONPATH=. `which django-admin.py` test varify sample_load_process 
-  - DJANGO_SETTINGS_MODULE=varify.conf.settings ./bin/manage.py variants load --evs --1000g --sift --polyphen2 > variants.load.txt 2>&1 &
-  - DJANGO_SETTINGS_MODULE=varify.conf.settings ./bin/manage.py samples allele-freqs > samples.allele-freqs.txt 2>&1 &
-  #- DJANGO_SETTINGS_MODULE=varify.conf.settings ./bin/manage.py samples queue headless_tests/samples/disease_loci/locus_10
-  - "python headless_tests/test/start_ghostdriver.py"
-  - "sleep 8"
-  - "./bin/manage.py runserver 0.0.0.0:8004 &"
-  - "sleep 10"
-  - "rm -rf headless_tests/test/screen_shots/*"
-  - "rm -rf headless_tests/test/log/*"
-  - "gem install travis-artifacts"
+- DJANGO_SETTINGS_MODULE=varify.conf.settings ./bin/manage.py variants load --evs
+  --1000g --sift --polyphen2 > variants.load.txt 2>&1 &
+- DJANGO_SETTINGS_MODULE=varify.conf.settings ./bin/manage.py samples allele-freqs
+  > samples.allele-freqs.txt 2>&1 &
+- python headless_tests/test/start_ghostdriver.py
+- sleep 8
+- ./bin/manage.py runserver 0.0.0.0:8004 &
+- sleep 10
+- rm -rf headless_tests/test/screen_shots/*
+- rm -rf headless_tests/test/log/*
+#- gem install travis-artifacts
 script:
-  #- "python -m unittest discover -s headless_tests/test --pattern=test_*.py"
-   - "python -m unittest discover -s headless_tests/test --pattern=Verify*.py"
-   - "ls headless_tests/test/screen_shots"
-  
-
+- python -m unittest discover -s headless_tests/test --pattern=Verify*.py
+- ls headless_tests/test/screen_shots
 after_script:
-  #This should after_test , not sure why it didn't work there
-  - "travis-artifacts upload --target-path $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID --path headless_tests/test/screen_shots"
-
-after_failure: # this will of course run only on failure
-  - "travis-artifacts upload --target-path $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID --path headless_tests/test/log"
-
-
+#- travis-artifacts upload --target-path $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID --path headless_tests/test/screen_shots
+after_failure:
+#- travis-artifacts upload --target-path $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID --path headless_tests/test/log
 after_success:
-  - coveralls
-
-after_test:
-
+- coveralls
+after_test: 
+deploy:
+  provider: s3
+  access_key_id:
+    secure: eauLZfWhP3bliVwBebwrh99BuO1iqHoEkVwbD/kHsjKPQY5WwaBfsROKXgOhc0sQVMMX4pyQe33jSEgogFe5claLTLNlMnkf2NAMFlRlQ8/ICUfLyiif/N7vWk940Cztbh7wFQiWW69FdbAmI8/xBiTzjgNIdc+80qRfKMMGiK8=
+  secret_access_key:
+    secure: Pd7cVgWwUp6HGLFx+k0ss/ZVOz/SybVRLBmm1HC2VMVEH8bkkZk/Qd6QQIynzKr24TIVFpuKUhzkaF3r1uL3ciQTzu0fxr/Lay5VVeJ/mLJmbVFXDcjCpoR8md0YJtSc2XyklsvBbWohjsDY+m2n1Uo1eLZ73fYPJHbAhNw/4/w=
+  bucket: edu.chop.cbmi.tiu.travisci
+  local-dir: headless_tests/test
+  upload-dir: $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID
+  on:
+    branch: headless_test
