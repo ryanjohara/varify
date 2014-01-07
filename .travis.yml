@@ -6,15 +6,13 @@ python:
 - 2.7
 env:
   global:
-  - "ARTIFACTS_S3_BUCKET=edu.chop.cbmi.tiu.travisci"
-#  - secure: "eauLZfWhP3bliVwBebwrh99BuO1iqHoEkVwbD/kHsjKPQY5WwaBfsROKXgOhc0sQVMMX4pyQe33jSEgogFe5claLTLNlMnkf2NAMFlRlQ8/ICUfLyiif/N7vWk940Cztbh7wFQiWW69FdbAmI8/xBiTzjgNIdc+80qRfKMMGiK8="
-#  - secure: "KX6OC+YNmd7QdlttAZi0h6ut++owxegM/cQdX5LsRUm1G9gIMbeusreinZi7twM/MWYry1bbGjEERtyBvKUrelrdSJ8jeaidrLjxWBWQhtYm9tEAhZkSywaXZ62cd5gdyhMJHTMCcwwmkpnYJTSCOzp3k+C9pct+5ZTbyQNFek4="
-  - "ARTIFACTS_AWS_ACCESS_KEY_ID=eauLZfWhP3bliVwBebwrh99BuO1iqHoEkVwbD/kHsjKPQY5WwaBfsROKXgOhc0sQVMMX4pyQe33jSEgogFe5claLTLNlMnkf2NAMFlRlQ8/ICUfLyiif/N7vWk940Cztbh7wFQiWW69FdbAmI8/xBiTzjgNIdc+80qRfKMMGiK8="
-  - "ARTIFACTS_AWS_SECRET_ACCESS_KEY=KX6OC+YNmd7QdlttAZi0h6ut++owxegM/cQdX5LsRUm1G9gIMbeusreinZi7twM/MWYry1bbGjEERtyBvKUrelrdSJ8jeaidrLjxWBWQhtYm9tEAhZkSywaXZ62cd5gdyhMJHTMCcwwmkpnYJTSCOzp3k+C9pct+5ZTbyQNFek4="
-  - "S3_POLICY=ewoJIlZlcnNpb24iOiAiMjAwOC0xMC0xNyIsCgkiSWQiOiAiUG9saWN5MTM4Njg4ODIxMTgyNCIsCgkiU3RhdGVtZW50IjogWwoJCXsKCQkJIlNpZCI6ICJTdG10MTM4Njg4ODE5MjE5MSIsCgkJCSJFZmZlY3QiOiAiQWxsb3ciLAoJCQkiUHJpbmNpcGFsIjogewoJCQkJIkFXUyI6ICIqIgoJCQl9LAoJCQkiQWN0aW9uIjogInMzOioiLAoJCQkiUmVzb3VyY2UiOiAiYXJuOmF3czpzMzo6OmVkdV9jaG9wX2NibWlfdGl1X3RyYXZpc2NpLyoiCgkJfQoJXQp9Cg=="
-  - "S3_SIGNATURE=DzomQiBA4U8Q3o4INLpJv1Py07U="
-  - "DJANGO=1.4.5"
-  - "DJANGO=1.5.1"
+  - ARTIFACTS_S3_BUCKET=edu.chop.cbmi.tiu.travisci
+  - S3_POLICY=ewoJIlZlcnNpb24iOiAiMjAwOC0xMC0xNyIsCgkiSWQiOiAiUG9saWN5MTM4Njg4ODIxMTgyNCIsCgkiU3RhdGVtZW50IjogWwoJCXsKCQkJIlNpZCI6ICJTdG10MTM4Njg4ODE5MjE5MSIsCgkJCSJFZmZlY3QiOiAiQWxsb3ciLAoJCQkiUHJpbmNpcGFsIjogewoJCQkJIkFXUyI6ICIqIgoJCQl9LAoJCQkiQWN0aW9uIjogInMzOioiLAoJCQkiUmVzb3VyY2UiOiAiYXJuOmF3czpzMzo6OmVkdV9jaG9wX2NibWlfdGl1X3RyYXZpc2NpLyoiCgkJfQoJXQp9Cg==
+  - S3_SIGNATURE=DzomQiBA4U8Q3o4INLpJv1Py07U=
+  - DJANGO=1.4.5
+  - DJANGO=1.5.1
+  - secure: KxV9bg6JPbuyGI/RXoC8KsaKrWMyOQjnJXQd0uMhI1a89jNno527y6RprnHaX0Of9RoYEFeZi7G3rHT+gnCpPVoWIhl3yUrxe1X3k3Z8IUx96Aez9j/HIWXaoZV4LszIfwknLGH25EMfhKlu9g9xadPui9ZZn5HsWzWJdKeiCEU=
+  - secure: RkQZaMfzQCXNpDvpE25SlsTai0smuCcFv7zM6BCqtzZvQNiunolOmeNWVuV8Q3v+0JarN6K5+CFGdJTGOJY+rbICSIw8+4ceAwbaUGFKBpo96MdzfDEXhrl9cqFVLT4tderF+kLBMywVJHnZrxcEWNXf7uOEnz7l7P2KaSna01o=
 virtualenv:
   system_site_packages: true
 before_install: 
@@ -51,20 +49,11 @@ script:
 - python -m unittest discover -s headless_tests/test --pattern=Verify*.py
 - ls headless_tests/test/screen_shots
 after_script:
-- travis-artifacts upload --target-path $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID --path headless_tests/test/screen_shots
+- travis-artifacts upload --target-path $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID
+  --path headless_tests/test/screen_shots
 after_failure:
-- travis-artifacts upload --target-path $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID --path headless_tests/test/log
+- travis-artifacts upload --target-path $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID
+  --path headless_tests/test/log
 after_success:
 - coveralls
 after_test: 
-#deploy:
-#  provider: s3
-#  access_key_id:
-#    secure: eauLZfWhP3bliVwBebwrh99BuO1iqHoEkVwbD/kHsjKPQY5WwaBfsROKXgOhc0sQVMMX4pyQe33jSEgogFe5claLTLNlMnkf2NAMFlRlQ8/ICUfLyiif/N7vWk940Cztbh7wFQiWW69FdbAmI8/xBiTzjgNIdc+80qRfKMMGiK8=
-#  secret_access_key:
-#    secure: Pd7cVgWwUp6HGLFx+k0ss/ZVOz/SybVRLBmm1HC2VMVEH8bkkZk/Qd6QQIynzKr24TIVFpuKUhzkaF3r1uL3ciQTzu0fxr/Lay5VVeJ/mLJmbVFXDcjCpoR8md0YJtSc2XyklsvBbWohjsDY+m2n1Uo1eLZ73fYPJHbAhNw/4/w=
-#  bucket: edu.chop.cbmi.tiu.travisci
-#  local-dir: headless_tests/test
-#  upload-dir: $TRAVIS_REPO_SLUG/$TRAVIS_BRANCH/$TRAVIS_BUILD_ID/$TRAVIS_JOB_ID
-#  on:
-#    branch: headless_test
