@@ -17,7 +17,7 @@ install_requires = [
     'rq-dashboard>=0.3.1',
     'django-rq-dashboard',
     'django-widget-tweaks',
-    'psycopg2==2.4.4',
+    'psycopg2>=2.5.2',
     'avocado>=2.1,<3.0',
     'serrano>=2.1,<3.0',
     'modeltree>=1.1.7',
