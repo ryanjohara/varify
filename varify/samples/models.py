@@ -212,6 +212,7 @@ class Cohort(ObjectSet):
     allele_freq_modified = models.DateTimeField(null=True)
 
     set_object_rel = 'samples'
+    label_field = 'name'
 
     def __unicode__(self):
         return unicode(self.name)
@@ -251,11 +252,14 @@ class Cohort(ObjectSet):
                     # Calculate frequencies for all variants associated with
                     # all samples in this cohort
                     cursor.execute('''
-                        INSERT INTO cohort_variant (cohort_id, variant_id, af) (
-                            SELECT c.id, r.variant_id, COUNT(r.id) / c."count"::float
+                        INSERT INTO cohort_variant (cohort_id, variant_id, af)
+                        (
+                            SELECT c.id, r.variant_id,
+                                COUNT(r.id) / c."count"::float
                             FROM sample_result r
                                 INNER JOIN sample s ON (r.sample_id = s.id)
-                                INNER JOIN cohort_sample cs ON (cs.sample_id = s.id)
+                                INNER JOIN cohort_sample cs ON
+                                    (cs.sample_id = s.id)
                                 INNER JOIN cohort c ON (cs.cohort_id = c.id)
                             WHERE c.id = %s
                             GROUP BY c.id, r.variant_id, c."count"
@@ -369,6 +373,15 @@ class Result(TimestampedModel):
                 return dict(zip(bases, counts))
             except (TypeError, ValueError) as e:
                 log.exception(e)
+
+
+class ResultScore(TimestampedModel):
+    result = models.ForeignKey(Result, related_name='score', unique=True)
+    rank = models.IntegerField()
+    score = models.FloatField()
+
+    class Meta(object):
+        db_table = 'result_score'
 
 
 # Load signal receivers. This is imported below to prevent circular imports

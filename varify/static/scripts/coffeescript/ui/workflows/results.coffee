@@ -1,22 +1,17 @@
 define [
     'underscore'
     'marionette'
-    'cilantro/ui/core'
-    'cilantro/ui/base'
-    'cilantro/ui/paginator'
+    'cilantro'
     'cilantro/ui/numbers'
-    'cilantro/structs'
-    'cilantro/models'
     '../tables'
-    'cilantro/ui/context'
-    'cilantro/ui/concept'
-    'cilantro/ui/exporter'
-    'cilantro/ui/query'
+    '../modals'
+    '../../models'
     'tpl!templates/count.html'
     'tpl!templates/varify/workflows/results.html'
-], (_, Marionette, c, base, paginator, numbers, structs, models, tables, context, concept, exporter, query, templates...) ->
+    'tpl!templates/varify/modals/phenotypes.html'
+], (_, Marionette, c, numbers, tables, modal, models, templates...) ->
 
-    templates = _.object ['count', 'results'], templates
+    templates = _.object ['count', 'results', 'phenotypes'], templates
 
 
     class ResultCount extends Marionette.ItemView
@@ -33,12 +28,30 @@ define [
         modelEvents:
             'change:objectcount': 'renderCount'
 
+        initialize: ->
+            @data = {}
+            if not (@data.context = @options.context)
+                throw new Error 'context model required'
+
         onRender: =>
             @renderCount(@model, @model.objectCount if @model.objectCount? or '')
 
         renderCount: (model, count, options) ->
+            sample = null
+
+            if @data.context? and (json = @data.context.get('json'))?
+                _.each json.children, (child) ->
+                    if child.concept? and child.concept == 2
+                        sample = child.children[0].value[0].label
+
             numbers.renderCount(@ui.count, count)
-            @ui.label.text('records')
+            @ui.label.text("records in #{ sample or "various samples" }")
+            @ui.label.attr('title', sample)
+
+            if sample?
+                @ui.label.tooltip({animation: false, html: true, placement: 'bottom', container: 'body'})
+            else
+                @ui.label.tooltip('destroy')
 
 
     ###
@@ -80,23 +93,29 @@ define [
             resultsContainer: '.results-container'
             navbarButtons: '.results-workflow-navbar button'
             loadingOverlay: '.loading-overlay'
+            viewPhenotype: '.phenotype-modal .modal-body .span12'
 
         events:
-            'click .export-options-modal [data-save]': 'exportData'
+            'click .export-options-modal [data-save]': 'onExportClicked'
+            'click .export-options-modal [data-dismiss=modal]': 'onExportCloseClicked'
             'click [data-toggle=export-options]': 'showExportOptions'
             'click [data-toggle=export-progress]': 'showExportProgress'
             'click #pages-text-ranges': 'selectPagesOption'
             'click [data-toggle=save-query]': 'showSaveQuery'
             'click [data-toggle=context-panel]': 'toggleContextPanelButtonClicked'
+            'show.bs.modal .phenotype-modal': 'retrievePhenotypes'
+            'hidden.bs.modal .phenotype-modal': 'hidePhenotypes'
 
         regions:
+            columns: '#export-columns-tab'
             count: '.count-region'
             table: '.table-region'
             paginator: '.paginator-region'
             context: '.context-region'
-            exportTypes: '.export-options-modal .export-type-region'
-            exportProgress: '.export-progress-modal .export-progress-region'
+            exportTypes: '.export-type-region'
+            exportProgress: '.export-progress-region'
             saveQueryModal: '.save-query-modal'
+            resultDetailsModal: '.result-details-modal'
 
         initialize: ->
             @data = {}
@@ -129,10 +148,8 @@ define [
             @on 'router:load', @onRouterLoad
             @on 'router:unload', @onRouterUnload
 
-            # Get the route-free URL. That is, we want to remove the route at
-            # the end of the URL and be left with the root URL so we can use
-            # this to construct the result URLs later on.
-            @rootUrl = window.location.href.replace(new RegExp('/[^/]*/$'), '/')
+            c.on 'resultRow:click', (view, result) =>
+                @resultDetailsModal.currentView.update(view, result)
 
         onRouterUnload: =>
             @data.results.trigger('workspace:unload')
@@ -140,6 +157,21 @@ define [
         onRouterLoad: =>
             @data.results.trigger('workspace:load')
             @showContextPanel()
+
+        onExportCloseClicked: =>
+            _.delay =>
+                @columns.currentView.resetFacets()
+            , 25
+
+        onExportClicked: =>
+            # Don't update the view if the columns haven't changed
+            if _.isEqual(_.pluck(@data.view.facets.models, 'id'),
+                         _.pluck(@columns.currentView.data.facets.models, 'id'))
+                @exportData()
+            else
+                @data.view.facets.reset(@columns.currentView.data.facets.toJSON())
+                # TODO: Notify user if this fails
+                @data.view.save({}, {success: @exportData})
 
         showLoadingOverlay: =>
             if @isClosed? and not @isClosed
@@ -188,7 +220,7 @@ define [
 
             @ui.toggleFiltersIcon.removeClass('icon-collapse-alt')
             @ui.toggleFiltersIcon.addClass('icon-expand-alt')
-            @ui.toggleFiltersText.html('Hide Filters...')
+            @ui.toggleFiltersText.html('Hide Filters')
             @updateContextPanelOffsets()
             @$('.context').stacked('restack', @$el.height())
 
@@ -208,7 +240,7 @@ define [
 
             @ui.toggleFiltersIcon.addClass('icon-collapse-alt')
             @ui.toggleFiltersIcon.removeClass('icon-expand-alt')
-            @ui.toggleFiltersText.html('Show Filters...')
+            @ui.toggleFiltersText.html('Show Filters')
 
         onPageScroll: =>
             # If the view isn't rendered yet, then don't bother
@@ -372,7 +404,7 @@ define [
 
                 return @pageRangePattern.test(pageRange)
 
-        exportData: (event) ->
+        exportData: (event) =>
             # Clear any of the old iframes. If we are exporting again, these
             # downloads should all have finished based on the UI blocking
             # during active exports.
@@ -384,7 +416,7 @@ define [
                 @$('#export-error-message').html('An export type must be selected.')
                 @$('.export-options-modal .alert-block').show()
             else if not @isPageRangeValid()
-                @$('#export-error-message').html('Page range is invalid. Must be a single page(example: 1) or a range of pages(example: 2...5).')
+                @$('#export-error-message').html('Please enter a valid page range. The page range must be a single page(example: 1) or a range of pages(example: 2...5).')
                 @$('.export-options-modal .alert-block').show()
             else
                 @numPendingDownloads = selectedTypes.length
@@ -426,25 +458,28 @@ define [
                 @ui.saveQueryToggle.remove()
                 @ui.saveQuery.remove()
 
-            @paginator.show new paginator.Paginator
+            @paginator.show new c.ui.Paginator
                 model: @data.results
 
             @count.show new ResultCount
                 model: @data.results
+                context: @data.context
 
-            @exportTypes.show new exporter.ExportTypeCollection
+            @exportTypes.show new c.ui.ExportTypeCollection
                 collection: @data.exporters
 
-            @exportProgress.show new exporter.ExportProgressCollection
+            @exportProgress.show new c.ui.ExportProgressCollection
                 collection: @data.exporters
 
-            @saveQueryModal.show new query.EditQueryDialog
+            @resultDetailsModal.show new modal.ResultDetails
+
+            @saveQueryModal.show new c.ui.EditQueryDialog
                 header: 'Save Query'
                 view: @data.view
                 context: @data.context
                 collection: @data.queries
 
-            @context.show new context.ContextPanel
+            @context.show new c.ui.ContextPanel
                 model: @data.context
 
             @context.currentView.$el.stacked
@@ -452,10 +487,14 @@ define [
 
             @table.show new tables.ResultTable
                 collection: @data.results
-                rootUrl: @rootUrl
+                view: @data.view
 
             @table.currentView.on 'render', () =>
                 @$('.context').stacked('restack', @$el.height())
+
+            @columns.show new c.ui.ConceptColumns
+                view: @data.view
+                concepts: @data.concepts
 
             @ui.navbarButtons.tooltip
                 animation: false
@@ -492,5 +531,69 @@ define [
             # Opens the query modal without passing a model which assumes a new one
             # will be created based on the current session
             @saveQueryModal.currentView.open()
+
+        renderPhenotypes: (model, response) =>
+            return if not @ui.viewPhenotype.is(":visible")
+            @ui.viewPhenotype.find(".loading").hide()
+            attr = model.attributes
+            if attr.hpoAnnotations and attr.hpoAnnotations.length
+                attr.hpoAnnotations = _.sortBy(attr.hpoAnnotations, (value) ->
+                    parseInt(value.priority) or model.lowestPriority+1)
+            if attr.confirmedDiagnoses and attr.confirmedDiagnoses.length
+                attr.confirmedDiagnoses = _.sortBy(attr.confirmedDiagnoses, (value) ->
+                    parseInt(value.priority) or model.lowestPriority+1)
+            if attr.suspectedDiagnoses and attr.suspectedDiagnoses.length
+                attr.suspectedDiagnoses = _.sortBy(attr.suspectedDiagnoses, (value) ->
+                    parseInt(value.priority) or model.lowestPriority+1)
+            if attr.ruledOutDiagnoses and attr.ruledOutDiagnoses.length
+                attr.ruledOutDiagnoses = _.sortBy(attr.ruledOutDiagnoses, (value) ->
+                    parseInt(value.priority) or model.lowestPriority+1)
+
+            @ui.viewPhenotype.find(".content").html(templates.phenotypes(model.attributes))
+            @phenotypeXhr = undefined
+
+        hidePhenotypes: =>
+            @phenotypeXhr.abort() if @phenotypeXhr
+            @phenotypeXhr = undefined
+            @ui.viewPhenotype.find(".content").empty()
+            @ui.viewPhenotype.find(".loading").show()
+
+        phenotypesError: (model, response) =>
+            return if response.statusText is "abort"
+            @ui.viewPhenotype.find(".loading").hide()
+            if model?.attributes?.sample_id?
+                @ui.viewPhenotype.find(".content").html("<p>An error was encountered. " +
+                    "Unable to retrieve phenotypes for sample '#{ model.attributes.sample_id }'.</p>")
+            else
+                @ui.viewPhenotype.find(".content").html("<p>An error was encountered. No sample is selected.</p>")
+            @phenotypeXhr = undefined
+
+        sampleID: =>
+            sample = "various samples"
+
+            if @data.context? and (json = @data.context.get('json'))?
+                _.each json.children, (child) ->
+                    if child.concept? and child.concept == 2
+                        sample = child.children[0].value[0].label
+            sample
+
+        retrievePhenotypes: =>
+            sampleID = @sampleID()
+            if sampleID
+                # Update the title of the phenotype modal window with the
+                # current sample ID
+                $('.phenotype-sample-label').html("(#{ sampleID })")
+
+                phenotypes = new models.Phenotype
+                    sample_id: sampleID
+
+                @phenotypeXhr = phenotypes.fetch
+                    success: @renderPhenotypes
+                    error: @phenotypesError
+            else
+                # Clear the sample label since there is no sample selected.
+                $('.phenotype-sample-label').html("")
+                @phenotypesError(phenotypes, {})
+
 
     { ResultsWorkflow }

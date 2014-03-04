@@ -1,16 +1,20 @@
 import functools
+import requests
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf.urls import patterns, url
 from django.core.cache import cache
-from django.http import Http404
+from django.http import HttpResponse, Http404
+from django.core.exceptions import PermissionDenied
 from django.core.urlresolvers import reverse
 from django.views.decorators.cache import never_cache
+from django.conf import settings
 from preserialize.serialize import serialize
 from restlib2 import resources
+from serrano.resources.base import ThrottledResource
 from varify.variants.resources import VariantResource
 from varify import api
 from varify.assessments.models import Assessment
-from .models import Sample, Result
+from .models import Sample, Result, ResultScore
 
 
 def sample_posthook(instance, data, request):
@@ -29,7 +33,7 @@ def sample_posthook(instance, data, request):
     return data
 
 
-class SampleResource(resources.Resource):
+class SampleResource(ThrottledResource):
     model = Sample
 
     template = api.templates.Sample
@@ -49,7 +53,7 @@ class SampleResource(resources.Resource):
         return serialize(sample, posthook=posthook, **self.template)
 
 
-class SamplesResource(resources.Resource):
+class SamplesResource(ThrottledResource):
     model = Sample
 
     template = api.templates.Sample
@@ -60,11 +64,15 @@ class SamplesResource(resources.Resource):
         return serialize(samples, posthook=posthook, **self.template)
 
 
-class NamedSampleResource(resources.Resource):
+class NamedSampleResource(ThrottledResource):
     "Resource for looking up a sample by project, batch, and sample name"
     model = Sample
 
     template = api.templates.Sample
+
+    # Bypass authorization check imposed by Serrano's AUTH_REQUIRED setting
+    def __call__(self, *args, **kwargs):
+        return resources.Resource.__call__(self, *args, **kwargs)
 
     def is_not_found(self, request, response, project, batch, sample):
         try:
@@ -93,7 +101,7 @@ class NamedSampleResource(resources.Resource):
         return data
 
 
-class SampleResultsResource(resources.Resource):
+class SampleResultsResource(ThrottledResource):
     "Paginated view of results for a sample."
     model = Result
 
@@ -165,7 +173,7 @@ class SampleResultsResource(resources.Resource):
         return resp
 
 
-class SampleResultResource(resources.Resource):
+class SampleResultResource(ThrottledResource):
     model = Result
 
     template = api.templates.SampleResultVariant
@@ -174,7 +182,7 @@ class SampleResultResource(resources.Resource):
         return not self.model.objects.filter(pk=pk).exists()
 
     def _cache_data(self, request, pk, key):
-        related = ['sample', 'variant', 'genotype']
+        related = ['sample', 'variant', 'genotype', 'score']
 
         try:
             result = self.model.objects.select_related(*related).get(pk=pk)
@@ -205,6 +213,15 @@ class SampleResultResource(resources.Resource):
         data['variant'] = VariantResource.get(request, data['variant_id'])
         data.pop('variant_id')
 
+        try:
+            score = ResultScore.objects.get(result=result)
+            data['score'] = {
+                'score': score.score,
+                'rank': score.rank,
+            }
+        except ResultScore.DoesNotExist:
+            pass
+
         cache.set(key, data, timeout=api.CACHE_TIMEOUT)
         return data
 
@@ -226,11 +243,29 @@ class SampleResultResource(resources.Resource):
         return data
 
 
+class PhenotypeResource(ThrottledResource):
+    def get(self, request, sample_id):
+        endpoint = settings.PHENOTYPE_ENDPOINT % sample_id
+
+        try:
+            response = requests.get(endpoint, cert=(settings.VARIFY_CERT,
+                                    settings.VARIFY_KEY), verify=False)
+        except requests.exceptions.SSLError:
+            raise PermissionDenied
+        except requests.exceptions.ConnectionError:
+            return HttpResponse(status=500)
+        except requests.exceptions.RequestException:
+            raise Http404
+
+        return response.content
+
+
 sample_resource = never_cache(SampleResource())
 samples_resource = never_cache(SamplesResource())
 named_sample_resource = never_cache(NamedSampleResource())
 sample_results_resource = never_cache(SampleResultsResource())
 sample_result_resource = never_cache(SampleResultResource())
+phenotype_resource = never_cache(PhenotypeResource())
 
 urlpatterns = patterns(
     '',
@@ -240,4 +275,6 @@ urlpatterns = patterns(
         named_sample_resource, name='named_sample'),
     url(r'^(?P<pk>\d+)/variants/$', sample_results_resource, name='variants'),
     url(r'^variants/(?P<pk>\d+)/$', sample_result_resource, name='variant'),
+    url(r'^(?P<sample_id>.+)/phenotypes/$', phenotype_resource,
+        name='phenotype'),
 )

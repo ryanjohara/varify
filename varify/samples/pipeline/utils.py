@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from varify.genome.models import Genotype
 from varify.variants.utils import calculate_md5
@@ -5,24 +6,25 @@ from varify.variants.pipeline.utils import VariantCache
 from varify.pipeline import checks
 from varify.raw.utils.stream import VCFPGCopyEditor
 from varify.samples.models import Result
-import logging
 
 log = logging.getLogger(__name__)
+
 
 class ResultStream(VCFPGCopyEditor):
     vcf_fields = ('CHROM', 'POS', 'REF', 'ALT')
 
     info_fields = ('DB', 'DS', 'DP', 'Dels', 'MQ', 'MQ0', 'BaseQRankSum',
-        'MQRankSum', 'ReadPosRankSum', 'SB', 'Hrun', 'HaplotypeScore',
-        'QD', 'FS', 'BaseCounts')
+                   'MQRankSum', 'ReadPosRankSum', 'SB', 'Hrun',
+                   'HaplotypeScore', 'QD', 'FS', 'BaseCounts')
 
     output_columns = ('in_dbsnp', 'downsampling', 'raw_read_depth',
-        'spanning_deletions', 'mq', 'mq0', 'baseq_rank_sum', 'mq_rank_sum',
-        'read_pos_rank_sum', 'strand_bias', 'homopolymer_run', 'haplotype_score',
-        'quality_by_depth', 'fisher_strand', 'base_counts', 'variant_id',
-        'sample_id', 'read_depth', 'quality', 'genotype_id', 'genotype_quality',
-        'coverage_ref', 'coverage_alt', 'phred_scaled_likelihood',
-        'created', 'modified')
+                      'spanning_deletions', 'mq', 'mq0', 'baseq_rank_sum',
+                      'mq_rank_sum', 'read_pos_rank_sum', 'strand_bias',
+                      'homopolymer_run', 'haplotype_score', 'quality_by_depth',
+                      'fisher_strand', 'base_counts', 'variant_id',
+                      'sample_id', 'read_depth', 'quality', 'genotype_id',
+                      'genotype_quality', 'coverage_ref', 'coverage_alt',
+                      'phred_scaled_likelihood', 'created', 'modified')
 
     def __init__(self, *args, **kwargs):
         self.sample_id = kwargs.pop('sample_id')
@@ -47,29 +49,23 @@ class ResultStream(VCFPGCopyEditor):
         variant_id = self.variants.get(md5)
         assert variant_id is not None
 
-
         cleaned = super(ResultStream, self).process_line(record)
         # Remove variant specific parts
         cleaned = cleaned[4:]
 
         # can these be indexed?
         call = record.genotype(self.vcf_sample)
-        #for sample in record.samples:
-        #    if str(sample.sample) == str(self.vcf_sample):
-        #        call = sample
-        #        break
 
-        #log.debug('record {0} annotating sample {1} with variant {2} details {3}'.format(record,self.vcf_sample, variant_id,call))
-
-        # already seen this variant for this sample
-        # otherwise we would get a duplicate key value violation in sample_result
-        if Result.objects.filter(variant=variant_id,sample=self.sample_id).exists():
+        # Already seen this variant for this sample, otherwise we would get a
+        # duplicate key value violation in sample_result.
+        if Result.objects.filter(
+                variant=variant_id, sample=self.sample_id).exists():
             return None
 
-        # the possibility for multiple alleles in these wide vcfs is almost infinite
-        # so we need to triage the really weird ones into having a reference allele "0/#"
-        # or being off the map entirely "#/#""
-        gt = getattr(call, 'GT', None)
+        # The possibility for multiple alleles in these wide vcfs is almost
+        # infinite so we need to triage the really weird ones into having a
+        # reference allele "0/#" or being off the map entirely "#/#"".
+        gt = getattr(call.data, 'GT', None)
         if gt:
             try:
                 keyed_geno = self.genotypes[gt]
@@ -81,16 +77,16 @@ class ResultStream(VCFPGCopyEditor):
         else:
             keyed_geno = None
 
-        dp = getattr(call, 'DP', None)
-        gq = getattr(call, 'GQ', None)
-        ad = getattr(call, 'AD', None)
+        dp = getattr(call.data, 'DP', None)
+        gq = getattr(call.data, 'GQ', None)
+        ad = getattr(call.data, 'AD', None)
         if ad and len(ad) > 1:
             ad0 = ad[0]
             ad1 = ad[1]
         else:
             ad0 = None
             ad1 = None
-        pl = getattr(call, 'PL', None)
+        pl = getattr(call.data, 'PL', None)
         if pl:
             pl = ','.join([str(x) for x in pl])
 

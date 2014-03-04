@@ -2,7 +2,8 @@ define [
     'underscore'
     'marionette'
     './body'
-], (_, Marionette, body) ->
+    './header'
+], (_, Marionette, body, header) ->
 
 
     # Renders a table with one or more tbody elements each representing a
@@ -17,7 +18,6 @@ define [
         itemViewOptions: (item, index) ->
             _.defaults
                 collection: item.series
-                rootUrl: @data.rootUrl
             , @options
 
         collectionEvents:
@@ -25,13 +25,19 @@ define [
 
         initialize: ->
             @data = {}
-            if not (@data.rootUrl = @options.rootUrl)
-                throw new Error 'root url required'
+            if not (@data.view = @options.view)
+                throw new Error 'view model required'
+
+            @header = new header.Header
+                view: @data.view
+
+            @$el.append(@header.render().el)
 
             @collection.on 'reset', =>
                 if @collection.objectCount == 0
                     @$el.hide()
                 else
+                    @header.render()
                     @$el.show()
 
         showCurentPage: (model, num, options) ->

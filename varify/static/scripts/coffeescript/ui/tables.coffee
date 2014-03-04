@@ -1,7 +1,7 @@
 define [
     'underscore'
     './tables/body'
-    './tables/cell'
+    './tables/header'
     './tables/row'
     './tables/table'
 ], (_, mods...) ->

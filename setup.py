@@ -1,3 +1,4 @@
+import sys
 from setuptools import setup, find_packages
 
 PACKAGE = 'varify'
@@ -33,23 +34,19 @@ install_requires = [
     'pycap==0.8.1',
     'django-reversion==1.6.6',
     'diff-match-patch',
-    'vcf==0.6.5',
-    'django-news',
+    'pyvcf>=0.6.5',
 ]
+
+if sys.version_info < (2, 7):
+    install_requires += ['importlib']
 
 kwargs = {
     'name': PACKAGE,
     'version': VERSION,
     'packages': find_packages(exclude=['tests', '*.tests', '*.tests.*',
                                        'tests.*']),
+    'include_package_data': True,
     'install_requires': install_requires,
-    # This is a hack to get setuptools to install the the latest version of
-    # PyVCF from the github repo. This version doesn't yet exist on pypi so the
-    # so the entry install_requires won't find anything and it will fall back
-    # to this github link.
-    'dependency_links': [
-        'https://github.com/jamescasbon/PyVCF/archive/master.zip#egg=vcf-0.6.5',
-    ],
     'test_suite': 'test_suite',
     'author': '',
     'author_email': '',
