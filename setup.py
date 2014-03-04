@@ -1,3 +1,4 @@
+import sys
 from setuptools import setup, find_packages
 
 PACKAGE = 'varify'
@@ -17,15 +18,14 @@ install_requires = [
     'django-rq-dashboard',
     'django-widget-tweaks',
     'psycopg2==2.4.4',
-    'avocado==2.0.24',
-    'serrano==2.0.16',
-    'cilantro>=2.0.11,<2.1',
+    'avocado>=2.1,<3.0',
+    'serrano>=2.1,<3.0',
     'modeltree>=1.1.7',
-    'django-haystack==1.2.7',
-    'whoosh==2.4.0',
+    'django-haystack==2.0.0',
+    'whoosh==2.4.1',
     'openpyxl==1.6.1',
+    'django-objectset>=0.2.2',
     'django-siteauth==0.9b1',
-    'python-ldap>=2.3.12,<2.4',
     'django-registration2==0.9b2',
     'django-tracking2==0.1.2',
     'django-bootstrap-form>=0.5',
@@ -34,23 +34,19 @@ install_requires = [
     'pycap==0.8.1',
     'django-reversion==1.6.6',
     'diff-match-patch',
-    'vcf==0.6.5',
-    'django-news',
+    'pyvcf>=0.6.5',
 ]
+
+if sys.version_info < (2, 7):
+    install_requires += ['importlib']
 
 kwargs = {
     'name': PACKAGE,
     'version': VERSION,
     'packages': find_packages(exclude=['tests', '*.tests', '*.tests.*',
                                        'tests.*']),
+    'include_package_data': True,
     'install_requires': install_requires,
-    # This is a hack to get setuptools to install the the latest version of
-    # PyVCF from the github repo. This version doesn't yet exist on pypi so the
-    # so the entry install_requires won't find anything and it will fall back
-    # to this github link.
-    'dependency_links': [
-        'https://github.com/jamescasbon/PyVCF/archive/master.zip#egg=vcf-0.6.5',
-    ],
     'test_suite': 'test_suite',
     'author': '',
     'author_email': '',

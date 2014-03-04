@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from avocado.sets.models import ObjectSet, SetObject
+from objectset.models import ObjectSet, SetObject
 from varify.literature.models import PubMed
 from varify.genome.models import Chromosome
 from varify.phenotypes.models import Phenotype, PhenotypeThrough
@@ -93,13 +93,20 @@ class Exon(models.Model):
 class Transcript(models.Model):
     "Gene transcripts"
     refseq_id = models.CharField(max_length=100, unique=True)
-    strand = models.CharField(max_length=1, null=True, blank=True, help_text='+ or - for strand')
-    start = models.IntegerField('transcript start position', null=True, blank=True)
+    strand = models.CharField(max_length=1, null=True, blank=True,
+                              help_text='+ or - for strand')
+    start = models.IntegerField('transcript start position', null=True,
+                                blank=True)
     end = models.IntegerField('transcript end position', null=True, blank=True)
-    coding_start = models.IntegerField('coding region start position', null=True, blank=True)
-    coding_end = models.IntegerField('coding region end position', null=True, blank=True)
-    coding_start_status = models.CharField('coding region start status', max_length=20, null=True, blank=True)
-    coding_end_status = models.CharField('coding region end status', max_length=20, null=True, blank=True)
+    coding_start = models.IntegerField('coding region start position',
+                                       null=True, blank=True)
+    coding_end = models.IntegerField('coding region end position', null=True,
+                                     blank=True)
+    coding_start_status = models.CharField('coding region start status',
+                                           max_length=20, null=True,
+                                           blank=True)
+    coding_end_status = models.CharField('coding region end status',
+                                         max_length=20, null=True, blank=True)
     exon_count = models.IntegerField('number of exons', null=True, blank=True)
 
     gene = models.ForeignKey(Gene, null=True, blank=True)
@@ -114,11 +121,16 @@ class Transcript(models.Model):
 
 class GeneSet(ObjectSet):
     user = models.ForeignKey(User, null=True, blank=True)
+    name = models.CharField(max_length=100, null=True, blank=True)
     genes = models.ManyToManyField(Gene, through='GeneSetObject')
 
     published = models.BooleanField(default=True)
 
     set_object_rel = 'genes'
+    label_field = 'name'
+
+    def __unicode__(self):
+        return unicode(self.name)
 
     class Meta(object):
         db_table = 'geneset'

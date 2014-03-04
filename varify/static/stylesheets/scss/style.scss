@@ -1,134 +1,48 @@
 @import "lib/bourbon/bourbon";
 
-// Remove header top margins since it space it out too much
-[class*="span"] {
-    h1:first-child, h2:first-child, h3:first-child {
-        margin-top: 0;
-    }
+body {
+    padding-top: 40px;
 }
 
-// Override some of the Bootstrap tooltip properties to make the tooltip more
-// easily readable.
-.tooltip {
-    font-size: 13px;
-}
-.tooltip.in {
-    opacity: 1.0;
-}
-
-#main-area {
-    top: 100px;
-    bottom: 20px;
-    .inner {
-        padding: 0 10px;
-    }
-}
-
-#datacontext-sample-label {
-    display: inline-block;
-}
-
-#datacontext-sample-label:hover, .icon-info-sign:hover {
-    cursor: pointer;
-}
-
-#subnav .container-fluid {
-    > .nav {
-        margin-top: 3px;
-    }
-
-    > .btn, > .btn-group {
-        margin-top: 7px;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    // Normally the vertical alignment would be done with
-    // vertical-align: middle but Bootstrap seems to be unwilling to let me
-    // override its property of vertical-align: text-top on the icon class
-    // even when I add !important so a negative top margin will do for now.
-    .icon-info-sign {
-        margin-top: -1px;
-    }
-
-    .edit-analysis-button {
-        position: absolute;
-        top: 0;
-        right: 20px;
-    }
-
-    text-align: center;
-}
-
-// Adjust well and hero-unit to fix background better
-.hero-unit, .well {
-    @include box-shadow(0 2px 3px rgba(0, 0, 0, 0.3));
-    background-color: #fff;
-}
-
-.help-block {
-    color: #999;
-}
-
-#analysis-modal {
-    position: absolute;
-    top: 10%;
-    left: 10%;
-    right: 10%;
+#review-notification {
     margin: 0;
-    width: auto;
+    margin-top: 10px;
+}
+
+.unsortable-column {
+    cursor: auto;
+    pointer-events: none;
+}
+
+// Override Cilantro style
+.table-region {
+    margin-top: 10px !important;
+}
+
+.export-options-modal {
+    // Override Cilantro styles for modal and modal-body to alow the export
+    // modal to be a little larger than normal.
+    width: 720px !important;
+    margin-left: -360px !important;
 
     .modal-body {
-        max-height: 500px;
+        max-height: 500px !important;
     }
 }
 
-#workspace-area, #review-area, #export-area {
-    display: none;
-}
-
-#review-area .toolbar, #export-area .toolbar {
-    @include border-radius(3px);
-    padding: 8px 15px;
-    margin: 0 0 20px;
-    background-color: #ddd;
-}
-
-#columns-modal {
-    li select {
-        width: auto;
+.result-details-modal {
+    .modal {
+        width: 90%;
+        top: 5%;
+        left: 5%;
+        margin: 0;
+        max-height: 800px;
+        bottom: 5%;
     }
-}
-
-#report-container {
-    top: 66px;
-    bottom: 0;
-}
-
-ul.typeahead {
-    z-index: 1080;
-}
-
-#main-area .variant-container .content .row-fluid {
-    margin-bottom: 0;
-}
-
-#variant-table {
-    border: 0;
-    width: 100%;
-}
-
-#review-modal {
-    width: 90%;
-    top: 5%;
-    left: 5%;
-    margin: 0;
-    max-height: 800px;
-    bottom: 5%;
 
     .tab-content {
         position: absolute;
-        width: 100%;
+        width: 96.5%;
         top: 60px;
         bottom: 60px;
     }
@@ -298,4 +212,33 @@ ul.typeahead {
 
 #incidental-findings-label {
     padding-top: 35px;
+}
+
+#variant-details-content {
+    margin-right: 30px;
+
+    .assessments-table-container {
+        border-top: 2px solid #eee;
+    }
+}
+
+.assessment-details-table {
+    border: none;
+    margin-bottom: 30px;
+
+    .no-border {
+        border: none;
+    }
+
+    th {
+        text-align: left;
+    }
+
+    th, td {
+        padding-right: 20px;
+    }
+
+    tbody > tr {
+        border-top: 1px solid #eee;
+    }
 }
