@@ -151,36 +151,26 @@ require({
                 })
             }];
 
-            if (c.isSupported('2.2.0')) {
-                routes.push({
-                    id: 'query-load',
-                    route: 'results/:query_id/',
-                    view: new c.ui.QueryLoader({
-                        queries: this.data.queries,
-                        context: this.data.contexts.session,
-                        view: this.data.views.session
-                    })
-                });
-            }
-
-            var data;
-            if (c.isSupported('2.1.0')) {
-                data = {
+            routes.push({
+                id: 'query-load',
+                route: 'results/:query_id/',
+                view: new c.ui.QueryLoader({
                     queries: this.data.queries,
                     context: this.data.contexts.session,
                     view: this.data.views.session
-                };
+                })
+            });
 
-                if (c.isSupported('2.2.0')) {
-                    data.public_queries = this.data.public_queries;
-                }
-
-                routes.push({
-                    id: 'workspace',
-                    route: 'workspace/',
-                    view: new c.ui.WorkspaceWorkflow(data)
-                });
-            }
+            routes.push({
+                id: 'workspace',
+                route: 'workspace/',
+                view: new c.ui.WorkspaceWorkflow({
+                    queries: this.data.queries,
+                    context: this.data.contexts.session,
+                    view: this.data.views.session,
+                    public_queries: this.data.public_queries
+                })
+            });
 
             return this.start(routes);
         });
